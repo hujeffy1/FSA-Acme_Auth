@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "JWT=SECRET_KEY nodemon server"
+    "start:dev": "JWT=JPFP nodemon server",
+    "start:dev-windows": "set JWT=JPFP&&nodemon server"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "express": "^4.17.2",
     "jsonwebtoken": "^8.5.1",
     "nodemon": "^2.0.15",
