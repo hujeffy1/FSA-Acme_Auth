@@ -19,10 +19,6 @@ const requireToken = async (req, res, next) => {
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-app.get('/home', requireToken, (req, res, next) => {
-  res.send('Home page!');
-});
-
 app.post('/api/auth', async (req, res, next) => {
   try {
     res.send({
@@ -44,15 +40,17 @@ app.get('/api/auth', requireToken, async (req, res, next) => {
   }
 });
 
-app.get('/api/users/:id/notes', requireToken, async (req, res, next) => {
+app.get('/api/users/:userId/notes', requireToken, async (req, res, next) => {
   try {
-    res.send(
-      await Note.findAll({
-        where: {
-          userId: req.user.user.id,
-        },
-      })
-    );
+    const user = await User.findOne({
+      where: {
+        id: req.params.userId,
+      },
+      include: {
+        model: Note,
+      },
+    });
+    if (user.id === req.user.dataValues.id) res.send(user.notes);
   } catch (err) {
     next(err);
   }

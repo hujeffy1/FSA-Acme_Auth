@@ -26,9 +26,9 @@ const Note = conn.define('note', {
 
 User.byToken = async (token) => {
   try {
-    const user = jwt.verify(token, SECRET_KEY);
+    const vToken = jwt.verify(token, SECRET_KEY);
+    const user = await User.findByPk(vToken.userId);
     if (user) {
-      console.log(user);
       return user;
     }
     const error = Error('bad credentials');
@@ -47,18 +47,17 @@ User.authenticate = async ({ username, password }) => {
       username,
     },
   });
-  const match = await bcrypt.compare(password, user.password);
+  let match = await bcrypt.compare(password, user.password);
   if (match) {
-    return jwt.sign({ user }, SECRET_KEY);
+    return jwt.sign({ userId: user.dataValues.id }, SECRET_KEY);
   }
   const error = Error('bad credentials');
   error.status = 401;
   throw error;
 };
 
-User.beforeCreate(async (user) => {
-  const hashedPwd = await bcrypt.hash(user.password, 5);
-  user.password = hashedPwd;
+User.beforeCreate((user) => {
+  user.password = bcrypt.hashSync(user.password, 5);
 });
 
 const syncAndSeed = async () => {
@@ -68,6 +67,9 @@ const syncAndSeed = async () => {
     { username: 'moe', password: 'moe_pw' },
     { username: 'larry', password: 'larry_pw' },
   ];
+  const [lucy, moe, larry] = await Promise.all(
+    credentials.map((credential) => User.create(credential))
+  );
   const notes = [
     { text: 'hello world' },
     { text: 'reminder to buy groceries' },
@@ -75,9 +77,6 @@ const syncAndSeed = async () => {
   ];
   const [note1, note2, note3] = await Promise.all(
     notes.map((note) => Note.create(note))
-  );
-  const [lucy, moe, larry] = await Promise.all(
-    credentials.map((credential) => User.create(credential))
   );
   await lucy.setNotes(note1);
   await moe.setNotes([note2, note3]);

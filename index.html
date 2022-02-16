@@ -75,7 +75,7 @@
               },
             });
             const res = await axios.get(
-              `/api/users/${response.data.user.id}/notes`,
+              `/api/users/${response.data.id}/notes`,
               {
                 headers: {
                   authorization: token,
@@ -96,16 +96,14 @@
         }
         render() {
           const { auth } = this.state;
-          const user = auth.user || {};
-          const id = user.id || '';
           const { notes } = this.state;
           const { signIn, logout } = this;
-          if (!id) {
+          if (!auth.id) {
             return <SignIn signIn={signIn} />;
           } else {
             return (
               <div>
-                Welcome {auth.user.username}
+                Welcome {auth.username}
                 <ul>
                   Notes:
                   {notes.map((note) => {
